@@ -8,3 +8,4 @@ passlib[bcrypt]
 python-jose[cryptography]
 email-validator
 onnxruntime
+psycopg2-binary
