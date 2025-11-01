@@ -3,22 +3,26 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-# ⚙️ PostgreSQL connection details
-# Change these values to match your PostgreSQL setup
-DB_USER = os.getenv("POSTGRES_USER", "postgres")
-DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "aryan512")     # <-- change this
-DB_HOST = os.getenv("POSTGRES_HOST", "localhost")
-DB_PORT = os.getenv("POSTGRES_PORT", "5432")
-DB_NAME = os.getenv("POSTGRES_DB", "bg_remover")
-
-# ✅ SQLAlchemy Database URL
-SQLALCHEMY_DATABASE_URL = (
-    f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+# ✅ 1️⃣ Try to use Render’s DATABASE_URL (from environment variable)
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+psycopg2://postgres:aryan512@localhost:5432/bg_remover"  # fallback for local dev
 )
 
-# ✅ Create engine
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+# ✅ 2️⃣ (Optional) If you want to override manually, uncomment this:
+# DATABASE_URL = "postgresql://remove_bg_db_user:1GXasLjW4uMeU7YThL9o5oRgMC2VuHo2@dpg-d42uus9r0fns739pbjmg-a/remove_bg_db"
 
-# ✅ Session and Base
+# ✅ 3️⃣ Create SQLAlchemy engine
+engine = create_engine(DATABASE_URL)
+
+# ✅ 4️⃣ Create SessionLocal and Base
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
+# ✅ 5️⃣ Dependency for FastAPI routes
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
